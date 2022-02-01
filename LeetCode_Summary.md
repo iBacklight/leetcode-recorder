@@ -260,7 +260,7 @@ Instead, **I traverse every value and store k-1 minimum values in a list. Dynami
         return kth_num
 ```
 
-官方给出的答案非常tricky加fancy. 总的来说是利用二分法作为基础，从左下角开始沿着二分边缘向上检索. 
+官方给出的答案非常tricky加fancy. 总的来说是利用**二分法**作为基础，从左下角开始沿着二分边缘向上检索. 
 
 * 检索值若小于mid（最大值+最小值/2， 分别为左上角和右小角值），则将当前所在列的不大于 mid 的数的数量（即 i + 1）累加到答案中，并向右移动，否则向上移动；
 
@@ -303,7 +303,138 @@ Instead, **I traverse every value and store k-1 minimum values in a list. Dynami
 
 
 
-#### Useful algorithms in Array 有用的算法
+#### LC. 645 Set Mismatch (Easy)
+
+集合 s 包含从 1 到 n 的整数。不幸的是，因为数据错误，导致集合里面某一个数字复制了成了集合里面的另外一个数字的值，导致集合 丢失了一个数字 并且 有一个数字重复 。
+
+给定一个数组 nums 代表了集合 S 发生错误后的结果。
+
+请你找出重复出现的整数，再找到丢失的整数，将它们以数组的形式返回。
+链接：https://leetcode-cn.com/problems/set-mismatch
+
+```
+输入：nums = [1,2,2,4]
+输出：[2,3]
+```
+
+```
+输入：nums = [1,1]
+输出：[1,2]
+```
+
+本题要点： 
+
+a. 数组本身是**无序**的 
+
+b. **重复的数字不一定相邻**，缺失的字符一定在n之中
+
+由于本题解法过多(暴力循环判断解法， HashTable, 数学方法(python的set用法))，故不多列举解法。本体中可以学到使用collections模组中的counter以及其对应的most_common用法.
+
+```python
+def findErrorNums(self, nums: List[int]) -> List[int]:
+    from collections import Counter
+    check = Counter(nums)
+    dup = check.most_common(1)[0][0]
+    for i in range(1, len(nums) + 1):
+        if check[i] == 0:
+            abs = i
+            break
+            # abs = [i for i in range(1, len(nums) + 1) if check[i] == 0][0]
+            return [dup, abs]
+```
+
+Counter 用法可以参考最后一节 **Useful algorithms&elements in Array 有用的算法和玩意儿**. 
+
+
+
+#### LC. 287 Find the Duplicate Number (Medium)
+
+给定一个包含 n + 1 个整数的数组 nums ，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。假设 nums 只有 一个重复的整数 ，找出 这个重复的数 。你设计的解决方案必须不修改数组 nums 且只用常量级 O(1) 的额外空间**（故本题不可以使用哈希表）**。
+
+```
+输入：nums = [1,3,4,2,2]
+输出：2
+```
+
+链接：https://leetcode-cn.com/problems/find-the-duplicate-number
+
+错误记录:
+
+* 第一次提交使用双循环，但是执行时间超时。复杂度O(n^2)
+
+解决本题用到了dict().keys()来判断此数字是否遍历过，从而判断该数字是否重复
+
+```python
+def findDuplicate(self, nums: List[int]) -> int:
+        cnt = dict()
+        for num in nums:
+            if num in cnt.keys():
+                return num
+            else:
+                cnt[num] = 1
+```
+
+或者参考645题中的数学算法(重复的总和除以重复的次数)
+
+```python
+return (sum(nums) - sum(set(nums))) // (len(nums) - len(set(nums)))
+```
+
+而官方给出的两种方法则都非常有趣和魔幻。第一种是二分搜索，这道题告诉我们，如果不在作用于数组本身，而作用于数组中的（潜在有序的，比如从1到n都有）元素，则即使数组本身是无序的也可以使用二分法。
+
+二分查找的思路是先猜一个数（有效范围 [left, right] 里位于中间的数 mid），然后统计原始数组中 小于等于 mid 的元素的个数 cnt：
+
+* 如果 cnt **严格大于** mid。根据抽屉原理，重复元素就在区间 [left,mid] 里；
+* 否则，重复元素就在区间 [mid + 1, right] 里。
+
+参考代码：
+
+```python
+ # Bisect Search
+        left, right = 1, len(nums)-1
+        cnt = 0
+        while(left <= right):
+            mid = (left+right)//2
+            for num in nums: # 每一次更换mid 均要全部遍历数组一次
+                if  num <= mid:
+                    cnt += 1 # 统计数组中不大于mid的数目
+            if cnt <= mid:# 此时说明区间大于mid,“<” 可能发生在重复了一次以上的情况
+                left = mid + 1
+            else:#严格大于mid
+                right = mid-1
+                dup = mid
+            cnt = 0
+        return dup
+```
+
+
+第二种是快慢指针，双指针的一种应用。快慢指针由于比较复杂，请参考这篇解答。答主用非常直接的图片形式给出了如何使用双（快慢）指针以及为什么会回到循环的起始点。链接：https://leetcode-cn.com/problems/find-the-duplicate-number/solution/287xun-zhao-zhong-fu-shu-by-kirsche/
+
+代码参考:
+
+```python
+# Fast-slow pointer
+        slow = fast = cir_start = 0
+        while True:
+            fast = nums[nums[fast]]
+            slow = nums[slow]
+            if fast == slow: # utilize fast pointer find loop
+                break
+
+        while True: 
+            slow = nums[slow]
+            cir_start = nums[cir_start]# set same pace for two pointer to find dup
+            if cir_start == slow:
+                return slow        
+```
+
+
+
+
+
+
+
+#### Useful algorithms&elements in Array 有用的算法和玩意儿
 
 1. 二分查找 Bisect search, 要求**数组必须有序**，执行一次的时间复杂度为O(logn)
 
@@ -328,6 +459,56 @@ def binary_search_loop(lst,value):
 Python 有一个 `bisect` 模块，用于维护有序列表。`bisect` 模块实现了一个算法用于插入元素到有序列表。在一些情况下，这比反复排序列表或构造一个大的列表再排序的效率更高。Bisect 是二分法的意思，这里使用二分法来排序，它会将一个元素插入到一个有序列表的合适位置，这使得不需要每次调用 sort 的方式维护有序列表。模块具体内容请参考：https://docs.python.org/zh-cn/3.6/library/bisect.html
 
 本分享参考来源：http://kuanghy.github.io/2016/06/14/python-bisect
+
+------------------------
+
+总结一下Leetcode题中需要考虑二分法的触发条件：
+
+* 可能的返回值区间是连续的（可以是空间连续，也可以是数值连续）。比如是从[1,2,...,n]中的某个数，或比如是一个连续数组的某个元素。
+* 能够通过一个特定返回值的某种性质，判断真正返回值的区间。
+* 每次检查的函数时间复杂度应该小于等于O(n)。如果检查函数太复杂，在lc的题库里，就算写成二分应该也是通过不了的。
+
+作者：accsrd
+链接：https://leetcode-cn.com/problems/find-the-duplicate-number/solution/python3-wei-shi-yao-wo-men-yao-yong-er-f-0y0x/
+
+---------
+
+2. Python Counter
+
+```python
+from collections import Counter
+```
+
+Counter 的本质就是一个特殊的 dict，只不过它的 key 都是其所包含的元素，而它的 value 则记录了该 key 出现的次数。因此，**如果通过 Counter 并不存在的 key 访问 value，将会输出 0**（代表该 key 出现了 0 次）。 
+
+程序可通过任何可法代对象参数来创建 Counter 对象，此时 Counter 将会自动统计各元素出现的次数，并以元素为 key，出现的次数为 value 来构建 Counter 对象；程序也能以 dict 为参数来构建 Counter 对象；还能通过关键字参数来构建 Counter 对象。
+
+```python
+c3 = Counter(['Python', 'Swift', 'Swift', 'Python', 'Kotlin', 'Python'])
+# Output: Counter({'Python': 3, 'Swift': 2, 'Kotlin': 1})
+```
+
+Counter 继承了 dict 类，因此它完全可以调用 dict 所支持的方法。此外，Counter 还提供了如下三个常用的方法：
+
+- elements()：该方法返回该 Counter 所包含的**全部元素组成的迭代器**。
+- most_common([n])：该方法返回 Counter 中**出现最多的 n 个元素**。
+- subtract([iterable-or-mapping])：该方法计算 Counter 的减法，**其实就是计算减去之后各元素出现的次数**。 下面程序示范了 Counter 类中这些方法的用法示例：
+
+```python
+chr_cnt = Counter('abracadabra')
+print(chr_cnt.most_common(3))  
+# Output: [('a', 5), ('b', 2), ('r', 2)]
+```
+
+```python
+c = Counter(a=4, b=2, c=0, d=-2)
+d = Counter(a=1, b=2, c=3, d=4)
+c.subtract(d)
+print(c) 
+# Output: Counter({'a': 3, 'b': 0, 'c': -3, 'd': -6})
+```
+
+参考：https://www.ixyread.com/read/ID1605494154VwJr/OEBPS-Text-Section0121.html
 
 
 
