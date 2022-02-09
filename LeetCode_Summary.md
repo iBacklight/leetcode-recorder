@@ -408,7 +408,7 @@ return (sum(nums) - sum(set(nums))) // (len(nums) - len(set(nums)))
 ```
 
 
-第二种是快慢指针，双指针的一种应用。快慢指针由于比较复杂，请参考这篇解答。答主用非常直接的图片形式给出了如何使用双（快慢）指针以及为什么会回到循环的起始点。链接：https://leetcode-cn.com/problems/find-the-duplicate-number/solution/287xun-zhao-zhong-fu-shu-by-kirsche/
+第二种是**快慢指针**，双指针的一种应用。快慢指针由于比较复杂，请参考这篇解答。答主用非常直接的图片形式给出了如何使用双（快慢）指针以及为什么会回到循环的起始点。链接：https://leetcode-cn.com/problems/find-the-duplicate-number/solution/287xun-zhao-zhong-fu-shu-by-kirsche/
 
 代码参考:
 
@@ -430,13 +430,56 @@ return (sum(nums) - sum(set(nums))) // (len(nums) - len(set(nums)))
 
 
 
+#### LC. 697. Degree of an Array (Easy)
+
+给定一个非空且只包含非负数的整数数组 nums，数组的 度 的定义是指数组里任一元素出现频数的最大值。
+
+你的任务是在 nums 中找到与 nums 拥有相同大小的度的最短连续子数组，返回其长度。
+
+输入：nums = [1,2,2,3,1,4,2]
+输出：6
+解释：
+数组的度是 3 ，因为元素 2 重复出现 3 次。
+所以 [2,2,3,1,4,2] 是最短子数组，因此返回 6 。
+
+错误记录：
+
+1> 第一次测试未考虑多个数字拥有相同的degree但其对应的连续数组长度不同。
+
+My solution is similar to the official solution. **Hash Table record degree/first idx/last idx.**
+
+```python
+def findShortestSubArray(self, nums: List[int]) -> int:
+        hash = dict()
+        max_d = 0
+        max_num = nums[0]
+        for idx, num in enumerate(nums):
+            if num in hash.keys():
+                hash[num]['cnt'] += 1
+                hash[num]['last_idx'] = idx
+            else:
+                hash[num] = {'cnt':1, 'last_idx':idx, 'first_idx':idx}
+            if  hash[num]['cnt'] > max_d:
+                max_d =  hash[num]['cnt']
+                max_num = num
+            elif hash[num]['cnt'] == max_d:
+                 if (hash[num]['last_idx'] - hash[num]['first_idx']) < (hash[max_num]												['last_idx'] - hash[max_num]['first_idx']):
+                     max_num = num
+            else:
+                pass
+        
+        return (hash[max_num]['last_idx'] - hash[max_num]['first_idx'] + 1)
+```
+
 
 
 
 
 #### Useful algorithms&elements in Array 有用的算法和玩意儿
 
-1. 二分查找 Bisect search, 要求**数组必须有序**，执行一次的时间复杂度为O(logn)
+1. ##### 二分查找 Bisect search
+
+   要求**数组必须有序**，执行一次的时间复杂度为O(logn)
 
 - 从数组的中间元素开始，如果中间元素正好是要查找的元素，则搜素过程结束；
 - 如果某一特定元素大于或者小于中间元素，则在数组大于或小于中间元素的那一半中查找，而且跟开始一样从中间元素开始比较。
@@ -473,7 +516,7 @@ Python 有一个 `bisect` 模块，用于维护有序列表。`bisect` 模块实
 
 ---------
 
-2. Python Counter
+2. ##### Python Counter
 
 ```python
 from collections import Counter
