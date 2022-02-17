@@ -430,7 +430,7 @@ return (sum(nums) - sum(set(nums))) // (len(nums) - len(set(nums)))
 
 
 
-#### LC. 697. Degree of an Array (Easy)
+#### LC. 697 Degree of an Array (Easy)
 
 给定一个非空且只包含非负数的整数数组 nums，数组的 度 的定义是指数组里任一元素出现频数的最大值。
 
@@ -472,6 +472,171 @@ def findShortestSubArray(self, nums: List[int]) -> int:
 ```
 
 
+
+#### LC. 766 Toeplitz Matrix (Easy)
+
+给你一个 m x n 的矩阵 matrix 。如果这个矩阵是托普利茨矩阵，返回 true ；否则，返回 false 。
+
+如果矩阵上每一条由左上到右下的对角线上的元素都相同，那么这个矩阵是 托普利茨矩阵 。
+链接：https://leetcode-cn.com/problems/toeplitz-matrix
+
+```
+输入：matrix = [[1,2,3,4],
+			   [5,1,2,3],
+			   [9,5,1,2]]
+输出：true
+
+解释：
+在上述矩阵中, 其对角线为: 
+"[9]", "[5, 5]", "[1, 1, 1]", "[2, 2, 2]", "[3, 3]", "[4]"。 
+各条对角线上的所有元素均相同, 因此答案是 True 。
+```
+
+这道题比较简单，遍历每一个元素以及其对角元素即可。解答与答案一致。解答中有一个有意思的答案，**左斜看和rc_sum，右斜看差rc_diff**。
+
+```python
+def isToeplitzMatrix(self, matrix: List[List[int]]) -> bool:
+        R, C = len(matrix), len(matrix[0])
+        rc_diff = defaultdict(int)          #八皇后问题的热身
+        for r in range(R):
+            for c in range(C):
+                if r-c not in rc_diff:
+                    rc_diff[r-c] = matrix[r][c] #不清楚这有什么数学原理吗？
+                else:
+                    if rc_diff[r-c] != matrix[r][c]:
+                        return False
+        return True
+
+作者：code_learner
+链接：https://leetcode-cn.com/problems/toeplitz-matrix/solution/c-python3-ba-huang-hou-wen-ti-de-re-shen-ppu5/
+```
+
+
+
+#### LC. 565 Array Nesting (Medium)
+
+索引从0开始长度为N的数组A，包含0到N - 1的所有整数。找到最大的集合S并返回其大小，其中 S[i] = {A[i], A[A[i]], A[A[A[i]]], ... }且遵守以下的规则。
+
+假设选择索引为i的元素A[i]为S的第一个元素，S的下一个元素应该是A[A[i]]，之后是A[A[A[i]]]... 以此类推，不断添加直到S出现重复的元素。
+链接：https://leetcode-cn.com/problems/array-nesting
+
+```
+输入: A = [5,4,0,3,1,6,2]
+输出: 4
+解释: 
+A[0] = 5, A[1] = 4, A[2] = 0, A[3] = 3, A[4] = 1, A[5] = 6, A[6] = 2.
+
+其中一种最长的 S[K]:
+S[0] = {A[0], A[5], A[6], A[2]} = {5, 6, 2, 0}
+```
+
+错误总结：
+
+a. 考虑到快慢指针，但是没有考虑冗余（重复）计算。
+
+b. 试图记录过程中的值存在hash table中，但是记录方式有问题。没有考虑到像解答二一样设置一个暂时值
+
+My solution。记录遍历过的idx并且储存在hash table中。但这样计算占用时间过长。Only beats 25% both on runtime and memory. 基本上也是答案的解。
+
+```python
+def arrayNesting(self, nums: List[int]) -> int:
+        # fast-slow pointer
+        counter = max_num= 0
+        hash = dict()
+        for slow in range(len(nums)):
+            counter = 0
+            fast = slow
+            if slow in hash.keys():
+                continue
+            else:
+                hash[slow] = 0
+            while True:
+                fast = nums[nums[fast]]
+                slow = nums[slow]
+                counter += 1
+                 if fast == slow :
+                    hash[temp] = counter
+                    break
+                 elif slow in hash.keys():
+                    counter += hash[slow]
+                    break
+                 else:
+                    hash[slow] = 0
+            if  counter > max_num:
+                max_num = counter
+        return max_num
+```
+
+另外一个更快更好的, 将遍历过的指针的从那天number也记录在hash table中，则如果在其他数为起始值的环中途遇到该数，则执行：**该起始值对应的哈希表记录应当为=当前cnt + 遇到数的hash table值**。
+
+```python
+ def arrayNesting(self, nums: List[int]) -> int:
+ 		dic = {}
+        l = len(nums)
+        tmp = [1 for _ in range(l)]
+        for i in range(l):
+            if tmp[i]:
+                j = i
+                ct = 0
+                while tmp[j]:
+                    tmp[j] = 0
+                    ct += 1
+                    j = nums[j]
+                if j in dic:
+                    dic[i] = dic[j] + ct # key
+                else:
+                    dic[i] = ct
+        return max(dic.values())
+```
+
+
+
+#### LC. 769 Max Chunks To Make Sorted (Medium)
+
+给定一个长度为 n 的整数数组 arr ，它表示在 [0, n - 1] 范围内的整数的排列。
+
+我们将 arr 分割成若干 块 (即分区)，并对每个块单独排序。将它们连接起来后，使得连接的结果和按升序排序后的原数组相同。
+
+返回数组能分成的最多块数量。
+链接：https://leetcode-cn.com/problems/max-chunks-to-make-sorted
+
+```
+输入: arr = [1,0,2,3,4]
+输出: 4
+解释:
+我们可以把它分成两块，例如 [1, 0], [2, 3, 4]。
+然而，分成 [1, 0], [2], [3], [4] 可以得到最多的块数
+```
+
+错误记录：
+
+* 想到了arr[idx]与idx的关系，却未将idx与当前的max值的关系总结出来。总结归纳类题目仍需大量练习。
+
+Solution
+
+```python
+def maxChunksToSorted(self, arr: List[int]) -> int:
+        cnt = 0
+        cur_max = -1
+        n = len(arr)
+        for idx in range(n):       
+            cur_max = max(cur_max, arr[idx])
+            if cur_max == idx:
+                cnt += 1
+        return cnt
+```
+
+The key of this problem is 
+
+```python
+if cur_max == idx:
+```
+
+Since we only have the max num n-1 and n nums, it is obvious that the index of each num has a strong relationship with their position. For such sub-chunk, **the max number of a chunk should be exactly equal to the index of the max num**. and only in that way it satisfies:
+
+* The chunk includes all of the (k+1) num smaller than max num arr[k]: k, since it has k num with the max num == k (pre-requisite: no repeated nums + start from 0);
+* The following n-k nums will not affect the chunk;
+* The next chunk starts from k+1, the logic would be same with above rules.
 
 
 
@@ -553,9 +718,17 @@ print(c)
 
 参考：https://www.ixyread.com/read/ID1605494154VwJr/OEBPS-Text-Section0121.html
 
+---
 
+3. 哈希表 (Hash table)
 
+   https://www.cnblogs.com/czboke/p/13572409.html
 
+   https://codingdict.com/article/4843
+
+4. 双指针(Double pointer)
+
+   
 
 ##  Linked list(链表)
 
