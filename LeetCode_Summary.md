@@ -728,13 +728,252 @@ print(c)
 
 4. 双指针(Double pointer)
 
-   
+----
+
+
 
 ##  Linked list(链表)
 
-A linked table is either **empty nodes** or has a value and a pointer to the next linked table, so many linked table problems can be handled with **recursion**.
+A linked table is either **empty nodes** or has a value and a pointer to the next linked table, so many linked table problems can be handled with **Recursion**. **A single linked list node** includes two different parts:
 
-Regarding Recursion: 1) Separate a problem into several sub-problems 2) Sub-problems share exact same solution ideas. and 3) There should be a baseline or terminated condition.
+a) Value: Could be strings, integers, Objects
+
+b) The next node
+
+In this way, we could define the single linked list as a node class:
+
+```python
+class linkedlistNode():
+	def __init__(self, value, next=None):
+		self.value = value
+		self.next = next
+        
+    def get_next(self):
+        return self.next
+    
+    def set_next(self. node):
+        self.next = node
+        
+    def get_value(self):
+        return self.value
+    
+    def set_value(self, value):
+        self.value = value
+```
+
+And thus  lionked list class only:
+
+```python
+class linkedlist():
+	def __init__(self, head=None):
+		self.root = head
+        self.size = 0
+     
+    def get_size(self):
+        return self.size
+    
+    def add(self,value):
+        new_node = linkedlistNode(value, self.root)
+        self.root = new_node
+        self.size += 1
+        
+    def remove(self, value):
+        cur_node = self.root
+        prev_node = None
+        while cur_node:
+            if cur_node.get_value == value:
+                if prev_node:
+                    prev_node.set_next(cur_node.get_next())
+                 else:
+                    self.root = cur_code.get_next()
+                 self.size -= 1
+                 return True
+             else:
+                prev_node = cur_node
+                cur_node = cur_node.get_next()
+     
+    def find(self, value):
+        cur_node  =  self.root
+        while cur_node:
+            if cur_node.get_data() == value:
+                return cur_node
+            else:
+                cur_node = cur_node.get_next()
+        return None  
+```
 
 
 
+Type of linked list:
+
+![image-20220217175814829](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220217175814829.png)
+
+Here is the basic function of a linked list class:![image-20220217175906390](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220217175906390.png)
+
+---
+
+Regarding **Recursion**: 
+
+1) Separate a problem into several sub-problems 
+
+2) Sub-problems share exact same solution ideas. and 
+
+3) There should be a baseline or terminated condition.
+
+   
+
+#### LC. 2 Two Add (Easy)
+
+给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。
+
+请你将两个数相加，并以相同形式返回一个表示和的链表。
+
+你可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+链接：https://leetcode-cn.com/problems/add-two-numbers
+
+```
+输入：l1 = [2,4,3], l2 = [5,6,4]
+输出：[7,0,8]
+解释：342 + 465 = 807.
+
+输入：l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]
+输出：[8,9,9,9,0,0,0,1]
+```
+
+My solution. 传统强解，分别计算num1和num2后再进行相加，然后分链表
+
+```python
+def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
+        num1 = 0
+        num2 = 0
+        cur_node = l1
+        i = 0
+        while cur_node:
+             num1 += cur_node.val*pow(10,i)
+             cur_node = cur_node.next
+             i += 1
+        cur_node = l2
+        i = 0
+        while cur_node:
+             num2 += cur_node.val*pow(10,i)
+             cur_node = cur_node.next
+             i += 1
+        new_num = num1 + num2
+        new_node = ListNode()
+        cur_node = new_node
+        while True:
+            cur_node.val = new_num % 10
+            new_num = new_num//10
+            if new_num != 0:
+                cur_node.next = ListNode()
+                cur_node = cur_node.next
+            else:
+                break
+        return new_node
+```
+
+更好的解答如下，利用单链表和加法原理，实现一次循环解决问题。其要点在于优先更新next的值后，再补充更新当前的值；在循环语句最后增加的`tp.val > 9`保证了最后一次运算是二位数的例外情况。此算法增强了运算时间（一次循环）以及减少了内存消耗。
+
+```python
+def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
+	newPoint = ListNode(l1.val + l2.val)
+    rt, tp = newPoint, newPoint
+    while (l1 and (l1.next != None)) or (l2 and (l2.next != None)) or (tp.val > 9):
+        l1, l2 = l1.next if l1 else l1, l2.next if l2 else l2
+        tmpsum = (l1.val if l1 else 0) + (l2.val if l2 else 0)
+        tp.next = ListNode(tp.val//10 + tmpsum)
+        tp.val %= 10
+        tp = tp.next
+        return rt
+```
+
+![image-20220217211109310](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220217211109310.png)
+
+
+
+#### LC. 160 Intersection of Two Linked Lists (Easy)
+
+给你两个单链表的头节点 headA 和 headB ，请你找出并返回两个单链表相交的起始节点。如果两个链表不存在相交节点，返回 None 。
+
+链接：https://leetcode-cn.com/problems/intersection-of-two-linked-lists/
+
+![img](https://assets.leetcode.com/uploads/2021/03/05/160_example_1_1.png)
+
+
+
+```
+输入：listA = [4,1,8,4,5], listB = [5,6,1,8,4,5]
+输出：Intersected at '8'
+解释：相交节点的值为 8 （注意，如果两个链表相交则不能为 0）。
+从各自的表头开始算起，链表 A 为 [4,1,8,4,5]，链表 B 为 [5,6,1,8,4,5]。
+在 A 中，相交节点前有 2 个节点；在 B 中，相交节点前有 3 个节点。
+```
+
+错误记录：
+
+* 注意题目中是找出相交的链表节点（地址），而不是值。如示例，虽然AB链表均有1，但由于不在同一个指针下，所以不是相交节点。
+* 循环判断的结束位置，需要将两个链表都遍历结束，而不应该当结束在其中一个链表遍历结束。
+
+My solution. 利用哈希表，这种解法其实有两种。一是两个链表同时遍历，这样的事件复杂度可能是O(max(m,n))==O(m+n),但是空间复杂度稍大O(m+n)；或者先遍历一个链表, 存入哈希表，然后再遍历另外一个链表。
+
+Hash table 1:
+
+```python
+ def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> ListNode:
+        # Hash table
+        curA = headA
+        curB = headB
+        hash_midA = dict()
+        hash_midB = dict()
+        while (curA != None ) or (curB != None):
+            if curA:
+                hash_midA[curA] = 0
+                if curA in hash_midB.keys():
+                    return curA
+                curA = curA.next
+            if curB:
+                hash_midB[curB] = 0 
+                if curB in hash_midA.keys():
+                    return curB
+                curB = curB.next 
+        return None
+```
+
+Hash table 2:
+
+```python
+def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> ListNode:
+        s = dict()
+        while headA:
+            s[headA] = 0
+            headA = headA.next
+        while headB:
+            if headB in s.keys():
+                return headB
+            headB = headB.next
+        return None
+```
+
+另外一个进阶算法，利用了双指针(Double Pointer), 两个链表同时开始遍历，当一个链表遍历结束后则将其指向另外一个链表头。要点在于：
+
+* 当两个链表存在相交节点：由于两个链表走过相同相同的路程（到相交节点），又是同时开始遍历，所以一定会在相交节点处相遇。
+* 当两个链表不存在交点：最终会在对方的None处相遇。
+
+两个指针均会遍历两个链表的各个节点各一次，时间复杂度O(m+n)。而且无需多余储存空间， 空间复杂度O(1)。
+
+```python
+def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> ListNode:
+        a,b = headA,headB
+        while a != b:
+            a = a.next if a else headB
+            b = b.next if b else headA
+        return a
+```
+
+另外也可以求两个链表的差，长的链表先移动，移动到和短的链表一样长的程度，然后两个链表同步往后边移动边比较。
+
+参考第三种解法：https://leetcode-cn.com/problems/intersection-of-two-linked-lists/solution/acm-xuan-shou-tu-jie-leetcode-xiang-jiao-c8zo/
+
+
+
+#### Useful algorithms&elements in Array 有用的算法和玩意儿
