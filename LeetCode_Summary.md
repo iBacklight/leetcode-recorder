@@ -11,6 +11,8 @@ The recommended  learn order:
 
 ## Data Structure 数据结构
 
+此节包括 Array(数组), Linked list(链表), graph(图), Hash Table(哈希表), String(字符串), 树(tree), Stack and Queue(栈与队列), Bit(位运算)
+
 ### Array(数组)
 
 Not too much to add to this structure. Let's go to see the code.
@@ -166,7 +168,7 @@ def findMaxConsecutiveOnes(self, nums: List[int]) -> int:
 
 
 
-#### LC.240 Search a 2D Matrix II (Medium)
+#### LC.240 Search a 2D Matrix II (Medium)*
 
 编写一个高效的算法来搜索 m x n 矩阵 matrix 中的一个目标值 target 。该矩阵具有以下特性：
 
@@ -208,7 +210,7 @@ def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
 
 
 
-#### LC. 378 Kth Smallest Element in a Sorted Matrix ((Medium))
+#### LC. 378 Kth Smallest Element in a Sorted Matrix ((Medium))*
 
 给你一个 n x n 矩阵 matrix ，其中每行和每列元素均按升序排序，找到矩阵中第 k 小的元素。
 请注意，它是 排序后 的第 k 小元素，而不是第 k 个 不同 的元素。
@@ -303,7 +305,7 @@ Instead, **I traverse every value and store k-1 minimum values in a list. Dynami
 
 
 
-#### LC. 645 Set Mismatch (Easy)
+#### LC. 645 Set Mismatch (Easy)*
 
 集合 s 包含从 1 到 n 的整数。不幸的是，因为数据错误，导致集合里面某一个数字复制了成了集合里面的另外一个数字的值，导致集合 丢失了一个数字 并且 有一个数字重复 。
 
@@ -347,7 +349,7 @@ Counter 用法可以参考最后一节 **Useful algorithms&elements in Array 有
 
 
 
-#### LC. 287 Find the Duplicate Number (Medium)
+#### LC. 287 Find the Duplicate Number (Medium)*
 
 给定一个包含 n + 1 个整数的数组 nums ，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。假设 nums 只有 一个重复的整数 ，找出 这个重复的数 。你设计的解决方案必须不修改数组 nums 且只用常量级 O(1) 的额外空间**（故本题不可以使用哈希表）**。
 
@@ -642,9 +644,9 @@ Since we only have the max num n-1 and n nums, it is obvious that the index of e
 
 #### Useful algorithms&elements in Array 有用的算法和玩意儿
 
-1. ##### 二分查找 Bisect search
+##### 二分查找 Bisect search
 
-   要求**数组必须有序**，执行一次的时间复杂度为O(logn)
+要求**数组必须有序**，执行一次的时间复杂度为O(logn)
 
 - 从数组的中间元素开始，如果中间元素正好是要查找的元素，则搜素过程结束；
 - 如果某一特定元素大于或者小于中间元素，则在数组大于或小于中间元素的那一半中查找，而且跟开始一样从中间元素开始比较。
@@ -681,7 +683,7 @@ Python 有一个 `bisect` 模块，用于维护有序列表。`bisect` 模块实
 
 ---------
 
-2. ##### Python Counter
+##### Python Counter
 
 ```python
 from collections import Counter
@@ -809,6 +811,21 @@ Type of linked list:
 ![image-20220217175814829](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220217175814829.png)
 
 Here is the basic function of a linked list class:![image-20220217175906390](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220217175906390.png)
+
+编辑链表有关代码时，务必注意的几个问题
+
+* 注意在python中编辑链表，由于python本身模糊了指针的意向，故实际上链表被旭化成一个字典，而字典本体就是链表指针。若两个链表中的某个节点拥有相同的值，但节点指针不一样，那它们就不属于同一个链表。这一点在160题目中表达的很准确。
+
+* 当遍历节点想要依次改变链表的顺序或者取值，注意生成新链表时，切记生成两次
+
+  ```python
+  new,cur = ListNode, ListNode
+  # or
+  new = ListNode()
+  cur = new_node
+  ```
+
+  这两个的指针在初始节点是一样的，但后续可以将cur的指向不停更改（此时可能还需借助一个temp空间暂时记录cur或者cur.next的值），而new一直指向链表初始位置，最终new将记录cur的所有变化形成最终需要的链表。详见2题，206题。
 
 ---
 
@@ -976,4 +993,118 @@ def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> ListNode:
 
 
 
-#### Useful algorithms&elements in Array 有用的算法和玩意儿
+#### LC. 206 Reversed Linked List (Easy)*
+
+Note: 此题目为链表中的经典解题，需详细理解。
+
+给你单链表的头节点 `head` ，请你反转链表，并返回反转后的链表。
+
+```
+输入：head = [1,2,3,4,5]
+输出：[5,4,3,2,1]
+```
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/rev1ex1.jpg)
+
+
+
+本题是链表经典题目，解答涉及哈希，迭代(Iteration), 递归(Recursion)
+
+**a. Hash Table**
+
+思路较为简单，利用哈希表记录节点位置和对应的val的键对值，再反向赋予另外一个链表
+
+```python
+def reverseList(self, head: ListNode) -> ListNode:
+        if not head:
+            return None
+        l = 0 # Calculate the length of the linked list
+        hash_mid = dict()
+        while head.next != None:
+            hash_mid[l] = head.val
+            l += 1
+            head = head.next
+        new_node = temp = ListNode(hash_mid[l-1])
+        for n in reversed(range(l-1)): # re-apply hash table in reversed rule
+            temp.next = ListNode(hash_mid[n])
+            temp = temp.next
+        return new_node 
+```
+
+**b. 迭代**
+
+在遍历链表时，将当前节点的 next指针改为指向前一个节点。由于节点没有引用其前一个节点，因此必须事先存储其前一个节点。在更改引用之前，还需要存储后一个节点。最后返回新的头引用。
+
+![迭代.gif](https://pic.leetcode-cn.com/7d8712af4fbb870537607b1dd95d66c248eb178db4319919c32d9304ee85b602-%E8%BF%AD%E4%BB%A3.gif)
+
+Code:
+
+```python
+def reverseList(self, head: ListNode) -> ListNode:
+        # Simple version of iteration
+        if not head:
+             return None
+        prev = None
+        curr = head # head pointer
+        while curr != None:
+            temp = curr.next # here temp will store the curr.next pointer, and iter
+            curr.next = prev
+            prev = curr
+            curr = temp # give back, for next loop step iter to next node
+        return prev
+```
+
+**c. 递归**
+
+递归的两个条件：
+
+1. 终止条件是当前节点或者下一个节点==null
+2. 在函数内部，改变节点的指向
+
+在本题中，我们可以先节点指针遍历到链表尾部（此时递归前进，一直调用递归函数），之后再反向返回每个递归回合的当前节点指针（递归反向，即开始return）
+
+![递归.gif](https://pic.leetcode-cn.com/dacd1bf55dec5c8b38d0904f26e472e2024fc8bee4ea46e3aa676f340ba1eb9d-%E9%80%92%E5%BD%92.gif)
+
+Code:
+
+```python
+def reverseList(self, head: ListNode) -> ListNode:
+        # Recursion
+        def Recur(head):
+            if head == None or head.next == None:# head == None avoids input == []
+                # return until traverse to second last node of origin linked list
+                return head, head
+            pre, last = Recur(head.next)
+            # 进入到这里已经是递归反向了
+            last.next = head # last最先指向None, 而函数中的head最先指向倒数第二位，然后依次向前
+            head.next = None # 最后一个head：val=为初始链表的val，next=None
+            # 每次均会取出前一个head.val赋给pre
+            return pre, head # 最终返回
+        
+        rt, m = Recur(head)
+        return rt
+```
+
+例如例子中的题目，我们记录一下**递归反向**返回pre和last时`head`变量的取值：
+
+![image-20220221205220422](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220221205220422.png)
+
+再来看一下最终返回时，head的取值
+
+![image-20220221204405999](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220221204405999.png)
+
+
+
+而最终返回时pre的取值依次为：
+
+![image-20220221204550158](C:\Users\Alex Qi\AppData\Roaming\Typora\typora-user-images\image-20220221204550158.png)
+
+即链表通过last这个中间变量，每一次将当前head的个节点赋给新链表的next节点。注意直接的将head赋给last.next有风险，这样100%会形成环路，例如：`ListNode(val:5,next:ListNode(val:4,next:ListNode(val:5,next:None)))`
+
+即相当于
+
+`pre.next.next = head`
+
+此时需要把head.next设置成None，才可以进行下一次递归。
+
+### Useful algorithms&elements in Array 有用的算法和玩意儿
